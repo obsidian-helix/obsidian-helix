@@ -26,6 +26,7 @@ Two ways to do this are using BRAT or manually.
   $ npm i
   $ npm run build
   ```
+2. Restart Obsidian.
 2. Go to Settings in Obsidian and enable `Helix Keybindings`.
 
 ## Usage
