@@ -30,20 +30,14 @@ export function moveNextWordEnd(view: EditorView): boolean {
 				const line = state.doc.lineAt(pos);
 				const text = state.doc.sliceString(pos, line.to);
 
-				// Skip current word
 				let i = 0;
-				while (i < text.length && /\S/.test(text[i])) i++;
-				// Skip whitespace
+				// Skip whitespace if we're on it
 				while (i < text.length && /\s/.test(text[i])) i++;
-				// Move to end of next word
+				// Move to end of current/next word
 				while (i < text.length && /\S/.test(text[i])) i++;
 
-				// If we didn't move and not at end of line, move at least one char
-				if (i === 0 && pos < line.to) {
-					i = 1;
-				}
-				// If at end of line, move to start of next line
-				else if (pos + i >= line.to && line.number < state.doc.lines) {
+				// If we didn't move, we must be at the end of the line
+				if (i === 0 && line.number < state.doc.lines) {
 					const nextLine = state.doc.line(line.number + 1);
 					return EditorSelection.cursor(nextLine.from);
 				}
@@ -148,20 +142,14 @@ export function moveNextLongWordEnd(view: EditorView): boolean {
 				const line = state.doc.lineAt(pos);
 				const text = state.doc.sliceString(pos, line.to);
 
-				// Skip non-whitespace
 				let i = 0;
-				while (i < text.length && !/\s/.test(text[i])) i++;
-				// Skip whitespace
+				// Skip whitespace if we're on it
 				while (i < text.length && /\s/.test(text[i])) i++;
-				// Move to end of next WORD
+				// Move to end of current/next WORD
 				while (i < text.length && !/\s/.test(text[i])) i++;
 
-				// If we didn't move and not at end of line, move at least one char
-				if (i === 0 && pos < line.to) {
-					i = 1;
-				}
-				// If at end of line, move to start of next line
-				else if (pos + i >= line.to && line.number < state.doc.lines) {
+				// If we didn't move, we must be at the end of the line
+				if (i === 0 && line.number < state.doc.lines) {
 					const nextLine = state.doc.line(line.number + 1);
 					return EditorSelection.cursor(nextLine.from);
 				}
