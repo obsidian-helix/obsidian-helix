@@ -21,8 +21,8 @@ import {
 } from './helix-commands';
 
 /**
- * Additional Helix keybindings that supplement the codemirror-helix extension
- * These keybindings implement missing commands from the official Helix editor
+ * Additional Helix keybindings to supplement codemirror-helix.
+ * Implements commands missing from the core extension.
  */
 export function additionalHelixKeymap(): Extension {
 	return Prec.high(keymap.of([

@@ -201,11 +201,10 @@ export function splitSelectionOnNewline(view: EditorView): boolean {
 }
 
 /**
- * Split selection (S) - Keep only parts that match regex (via prompt)
+ * Split selection (S)
+ * Splits selection on whitespace. Does not support regex patterns.
  */
 export function splitSelection(view: EditorView): boolean {
-	// This would typically open a prompt for regex input
-	// For now, we'll split on whitespace as a basic implementation
 	const { state } = view;
 	const ranges: SelectionRange[] = [];
 
@@ -296,12 +295,10 @@ export function copySelectionOnNextLine(view: EditorView): boolean {
 }
 
 /**
- * Select regex (s) - Select text matching a regex pattern
+ * Select regex (s)
+ * Selects word at cursor. Does not prompt for regex pattern.
  */
 export function selectRegex(view: EditorView): boolean {
-	// This would typically open a prompt for regex input
-	// For a complete implementation, this needs UI integration
-	// Placeholder implementation: select current word
 	const { state } = view;
 	const range = state.selection.main;
 	const word = state.wordAt(range.head);
@@ -322,7 +319,8 @@ export function selectRegex(view: EditorView): boolean {
 // ============================================================================
 
 /**
- * Go to line (G) - Goes to last line, or with count goes to that line
+ * Go to line (G)
+ * Goes to last line, or specified line if lineNum provided.
  */
 export function gotoLine(view: EditorView, lineNum?: number): boolean {
 	const { state } = view;
@@ -438,10 +436,8 @@ export function deleteCharForwardCommand(view: EditorView): boolean {
 
 /**
  * Format selections (=)
- * Note: This is a placeholder. Real formatting would require LSP or formatter integration
+ * Does nothing. Requires formatter or LSP integration.
  */
 export function formatSelections(view: EditorView): boolean {
-	// Placeholder implementation - in a real scenario this would call a formatter
-	// For Markdown in Obsidian, basic formatting could be applied
 	return true;
 }

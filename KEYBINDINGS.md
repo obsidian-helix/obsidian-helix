@@ -1,10 +1,10 @@
 # Additional Helix Keybindings
 
-This document lists the additional Helix keybindings that have been implemented to supplement the core `codemirror-helix` extension. These keybindings can be toggled on/off in the plugin settings.
+Additional keybindings implemented to supplement `codemirror-helix`. Toggle on/off in plugin settings.
 
 ## Overview
 
-The `codemirror-helix` extension provides a solid foundation of Helix keybindings, but some commands from the official Helix editor were missing. This plugin now includes those missing keybindings to provide a more complete Helix editing experience in Obsidian.
+The `codemirror-helix` extension implements many Helix keybindings, but some were missing. This plugin adds them.
 
 ## Additional Keybindings
 
@@ -23,18 +23,18 @@ The `codemirror-helix` extension provides a solid foundation of Helix keybinding
 
 | Key | Command | Description |
 |-----|---------|-------------|
-| `s` | select_regex | Select text matching a pattern (currently selects word at cursor) |
-| `S` | split_selection | Split selection on whitespace |
-| `Alt-s` | split_selection_on_newline | Split selection into multiple selections at each newline |
-| `X` | extend_to_line_bounds | Extend current selection to encompass full lines |
+| `s` | select_regex | Selects word at cursor (no regex prompt) |
+| `S` | split_selection | Splits selection on whitespace only |
+| `Alt-s` | split_selection_on_newline | Splits selection at newlines |
+| `X` | extend_to_line_bounds | Extends selection to full lines |
 
 ### Normal Mode - Editing
 
 | Key | Command | Description |
 |-----|---------|-------------|
-| `C` | copy_selection_on_next_line | Duplicate the current line(s) to the next line |
-| `=` | format_selections | Format the selected text (placeholder - needs formatter integration) |
-| `G` | goto_line | Go to the last line of the document |
+| `C` | copy_selection_on_next_line | Duplicates current line(s) to next line |
+| `=` | format_selections | Does nothing (requires formatter integration) |
+| `G` | goto_line | Goes to last line only |
 
 ### Insert Mode - Enhanced Editing
 
@@ -148,31 +148,29 @@ The following keybindings are already provided by the `codemirror-helix` extensi
 
 ## Implementation Notes
 
+### Limitations
+
+Commands with limited functionality:
+
+1. **`s` (select_regex)**: Selects word at cursor. Does not prompt for regex pattern.
+2. **`S` (split_selection)**: Splits on whitespace only. Does not support regex patterns.
+3. **`=` (format_selections)**: Does nothing. Requires formatter or LSP integration.
+4. **`G` (goto_line)**: Goes to last line only. Does not accept line numbers.
+
 ### Keybinding Conflicts
 
-These additional keybindings are implemented with high precedence to work alongside the `codemirror-helix` extension. If you experience conflicts with other Obsidian plugins or keybindings, you can disable the additional keybindings in the plugin settings.
+- High precedence keybindings may override other plugins
+- `Alt-d` exists in both insert mode (this plugin) and normal mode (codemirror-helix)
+- Disable in plugin settings if conflicts occur
 
-### Future Improvements
+### Not Implemented
 
-Some commands are currently simplified implementations:
-
-1. **`s` (select_regex)**: Currently selects the word at cursor. A full implementation would open a prompt for regex input.
-2. **`S` (split_selection)**: Currently splits on whitespace. A full implementation would allow regex-based splitting.
-3. **`=` (format_selections)**: Placeholder implementation. Would require integration with a formatter or LSP.
-4. **`G` (goto_line)**: Goes to last line. In Helix, it also accepts a count to go to a specific line number.
-
-### LSP and Advanced Features
-
-Some Helix keybindings related to LSP features (code actions, diagnostics, etc.) are not implemented as they would require LSP integration, which is beyond the scope of a simple keybinding plugin.
+LSP-related commands (code actions, diagnostics, etc.) are not implemented. These require LSP integration.
 
 ## Configuration
 
-You can enable or disable the additional keybindings in the plugin settings:
+Toggle additional keybindings in plugin settings:
 
-1. Open Settings → Community plugins → Helix Keybindings
+1. Settings → Community plugins → Helix Keybindings
 2. Toggle "Enable additional keybindings"
-3. The editor will reload with the new settings
-
-## Contributing
-
-If you find issues or have suggestions for improving these keybindings, please open an issue or pull request on the GitHub repository.
+3. Editor reloads automatically
