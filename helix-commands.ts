@@ -1,8 +1,10 @@
 import { EditorView } from '@codemirror/view';
-import { EditorSelection, SelectionRange, Text, ChangeSpec } from '@codemirror/state';
+import { EditorSelection, SelectionRange, ChangeSpec } from '@codemirror/state';
 import {
 	deleteToLineStart,
-	deleteToLineEnd
+	deleteToLineEnd,
+	deleteCharBackward,
+	deleteCharForward
 } from '@codemirror/commands';
 
 /**
@@ -36,16 +38,17 @@ export function moveNextWordEnd(view: EditorView): boolean {
 				// Move to end of next word
 				while (i < text.length && /\S/.test(text[i])) i++;
 
-				// If we didn't move and not at end of line, go to end of line
-				if (i === 0 && pos < line.to) i = line.to - pos;
-				// If at end of line, move to next line
+				// If we didn't move and not at end of line, move at least one char
+				if (i === 0 && pos < line.to) {
+					i = 1;
+				}
+				// If at end of line, move to start of next line
 				else if (pos + i >= line.to && line.number < state.doc.lines) {
 					const nextLine = state.doc.line(line.number + 1);
-					pos = nextLine.from;
-					i = 0;
+					return EditorSelection.cursor(nextLine.from);
 				}
 
-				return EditorSelection.cursor(Math.min(pos + Math.max(i, 1), state.doc.length));
+				return EditorSelection.cursor(Math.min(pos + i, state.doc.length));
 			}),
 			selection.mainIndex
 		),
@@ -153,14 +156,17 @@ export function moveNextLongWordEnd(view: EditorView): boolean {
 				// Move to end of next WORD
 				while (i < text.length && !/\s/.test(text[i])) i++;
 
-				if (i === 0 && pos < line.to) i = 1;
+				// If we didn't move and not at end of line, move at least one char
+				if (i === 0 && pos < line.to) {
+					i = 1;
+				}
+				// If at end of line, move to start of next line
 				else if (pos + i >= line.to && line.number < state.doc.lines) {
 					const nextLine = state.doc.line(line.number + 1);
-					pos = nextLine.from;
-					i = 0;
+					return EditorSelection.cursor(nextLine.from);
 				}
 
-				return EditorSelection.cursor(Math.min(pos + Math.max(i, 1), state.doc.length));
+				return EditorSelection.cursor(Math.min(pos + i, state.doc.length));
 			}),
 			selection.mainIndex
 		),
@@ -218,14 +224,16 @@ export function splitSelection(view: EditorView): boolean {
 	for (const range of state.selection.ranges) {
 		const text = state.sliceDoc(range.from, range.to);
 		const parts = text.split(/\s+/);
-		let pos = range.from;
+		let searchFrom = 0;
 
 		for (const part of parts) {
 			if (part.length > 0) {
-				const idx = text.indexOf(part, pos - range.from);
-				const actualPos = range.from + idx;
-				ranges.push(EditorSelection.range(actualPos, actualPos + part.length));
-				pos = actualPos + part.length;
+				const idx = text.indexOf(part, searchFrom);
+				if (idx !== -1) {
+					const actualPos = range.from + idx;
+					ranges.push(EditorSelection.range(actualPos, actualPos + part.length));
+					searchFrom = idx + part.length;
+				}
 			}
 		}
 	}
@@ -268,7 +276,8 @@ export function extendToLineBounds(view: EditorView): boolean {
 export function copySelectionOnNextLine(view: EditorView): boolean {
 	const { state } = view;
 	const changes: ChangeSpec[] = [];
-	let cursorPos = 0;
+	const newRanges: SelectionRange[] = [];
+	let offset = 0;
 
 	for (const range of state.selection.ranges) {
 		const startLine = state.doc.lineAt(range.from);
@@ -280,13 +289,16 @@ export function copySelectionOnNextLine(view: EditorView): boolean {
 			insert: state.lineBreak + text
 		});
 
-		cursorPos = endLine.to + state.lineBreak.length + text.length;
+		// Calculate new cursor position after this insertion
+		const newStart = endLine.to + offset + state.lineBreak.length;
+		newRanges.push(EditorSelection.range(newStart, newStart + text.length));
+		offset += state.lineBreak.length + text.length;
 	}
 
 	if (changes.length > 0) {
 		view.dispatch({
 			changes,
-			selection: EditorSelection.cursor(cursorPos),
+			selection: EditorSelection.create(newRanges, newRanges.length - 1),
 			scrollIntoView: true
 		});
 		return true;
@@ -418,6 +430,20 @@ export function killToLineEnd(view: EditorView): boolean {
 	return deleteToLineEnd(view);
 }
 
+/**
+ * Delete char backward (Ctrl-h)
+ */
+export function deleteCharBackwardCommand(view: EditorView): boolean {
+	return deleteCharBackward(view);
+}
+
+/**
+ * Delete char forward (Ctrl-d)
+ */
+export function deleteCharForwardCommand(view: EditorView): boolean {
+	return deleteCharForward(view);
+}
+
 // ============================================================================
 // FORMATTING
 // ============================================================================
@@ -430,35 +456,4 @@ export function formatSelections(view: EditorView): boolean {
 	// Placeholder implementation - in a real scenario this would call a formatter
 	// For Markdown in Obsidian, basic formatting could be applied
 	return true;
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-/**
- * Ensure selections are forward (equivalent to Alt-:)
- */
-export function ensureSelectionsForward(view: EditorView): boolean {
-	const { state } = view;
-
-	view.dispatch({
-		selection: EditorSelection.create(
-			state.selection.ranges.map(range =>
-				EditorSelection.range(range.from, range.to)
-			),
-			state.selection.mainIndex
-		)
-	});
-
-	return true;
-}
-
-/**
- * Helper to check if we're in normal mode
- * This is a heuristic based on whether we have a non-empty selection
- */
-export function isNormalMode(view: EditorView): boolean {
-	// This is a simplified check - real implementation would check helix mode state
-	return !view.state.selection.main.empty;
 }

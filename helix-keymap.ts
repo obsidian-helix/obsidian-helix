@@ -15,8 +15,9 @@ import {
 	deleteWordForward,
 	killToLineStart,
 	killToLineEnd,
-	formatSelections,
-	ensureSelectionsForward
+	deleteCharBackwardCommand,
+	deleteCharForwardCommand,
+	formatSelections
 } from './helix-commands';
 
 /**
@@ -139,55 +140,13 @@ export function additionalHelixKeymap(): Extension {
 		// Ctrl-h - delete char backward (same as backspace)
 		{
 			key: 'Ctrl-h',
-			run: (view) => {
-				view.contentDOM.dispatchEvent(
-					new KeyboardEvent('keydown', { key: 'Backspace' })
-				);
-				return true;
-			}
+			run: deleteCharBackwardCommand
 		},
 
 		// Ctrl-d - delete char forward (same as delete)
 		{
 			key: 'Ctrl-d',
-			run: (view) => {
-				view.contentDOM.dispatchEvent(
-					new KeyboardEvent('keydown', { key: 'Delete' })
-				);
-				return true;
-			}
+			run: deleteCharForwardCommand
 		}
 	]));
-}
-
-/**
- * Get a map of all the additional keybindings for documentation
- */
-export function getAdditionalKeybindings(): Record<string, string> {
-	return {
-		// Word movement
-		'e': 'Move to end of next word',
-		'W': 'Move to next WORD (whitespace-delimited)',
-		'B': 'Move to previous WORD (whitespace-delimited)',
-		'E': 'Move to end of next WORD (whitespace-delimited)',
-
-		// Selection
-		's': 'Select regex (basic word selection)',
-		'S': 'Split selection on whitespace',
-		'Alt-s': 'Split selection on newlines',
-		'X': 'Extend selection to line bounds',
-
-		// Editing
-		'C': 'Copy selection on next line',
-		'=': 'Format selections',
-		'G': 'Go to last line',
-
-		// Insert mode
-		'Ctrl-w': 'Delete word backward (insert mode)',
-		'Alt-d': 'Delete word forward (insert mode)',
-		'Ctrl-u': 'Kill to line start (insert mode)',
-		'Ctrl-k': 'Kill to line end (insert mode)',
-		'Ctrl-h': 'Delete char backward (insert mode)',
-		'Ctrl-d': 'Delete char forward (insert mode)'
-	};
 }
