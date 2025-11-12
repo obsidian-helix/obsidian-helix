@@ -12,6 +12,36 @@ import {
  * These supplement the core keybindings to match the official Helix editor
  */
 
+/**
+ * Check if editor is in insert mode by examining helix's mode field
+ * Mode types: 0 = Normal, 1 = Insert, 4 = Select
+ */
+function isInsertMode(view: EditorView): boolean {
+	try {
+		// Access helix mode field - it's not exported, so we iterate through fields
+		const state = view.state as any;
+
+		// Try to find a field that looks like helix's mode field
+		// It should have properties: type (number), minor (number)
+		for (const key of Object.keys(state)) {
+			const value = state[key];
+			if (value && typeof value === 'object' &&
+			    typeof value.type === 'number' &&
+			    typeof value.minor === 'number' &&
+			    value.type >= 0 && value.type <= 4) {
+				return value.type === 1; // 1 = Insert mode
+			}
+		}
+
+		// Fallback: check if selection is a cursor (empty selection = likely insert mode)
+		// This is not perfect but better than assuming true
+		return view.state.selection.main.empty;
+	} catch {
+		// If we can't determine mode, assume insert mode to not break functionality
+		return true;
+	}
+}
+
 // ============================================================================
 // WORD MOVEMENT COMMANDS
 // ============================================================================
@@ -404,29 +434,37 @@ export function deleteWordForward(view: EditorView): boolean {
 
 /**
  * Kill to line start (Ctrl-u)
+ * Only runs in insert mode to avoid conflicting with helix page-up
  */
 export function killToLineStart(view: EditorView): boolean {
+	if (!isInsertMode(view)) return false;
 	return deleteToLineStart(view);
 }
 
 /**
  * Kill to line end (Ctrl-k)
+ * Only runs in insert mode
  */
 export function killToLineEnd(view: EditorView): boolean {
+	if (!isInsertMode(view)) return false;
 	return deleteToLineEnd(view);
 }
 
 /**
  * Delete char backward (Ctrl-h)
+ * Only runs in insert mode
  */
 export function deleteCharBackwardCommand(view: EditorView): boolean {
+	if (!isInsertMode(view)) return false;
 	return deleteCharBackward(view);
 }
 
 /**
  * Delete char forward (Ctrl-d)
+ * Only runs in insert mode to avoid conflicting with helix page-down
  */
 export function deleteCharForwardCommand(view: EditorView): boolean {
+	if (!isInsertMode(view)) return false;
 	return deleteCharForward(view);
 }
 

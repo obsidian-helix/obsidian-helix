@@ -56,7 +56,8 @@ Toggle in plugin settings. See [KEYBINDINGS.md](KEYBINDINGS.md) for details.
 - `S` splits on whitespace only (no regex support)
 - `=` does nothing (requires formatter integration)
 - `G` goes to last line only (no line number support)
-- Insert mode `Alt-d` may conflict with normal mode `Alt-d` in some contexts
+- Insert mode `Alt-d` may conflict with normal mode `Alt-d`
+- Insert mode commands (`Ctrl-w`, `Ctrl-u`, `Ctrl-k`, `Ctrl-h`, `Ctrl-d`) only work in insert mode
 
 ### Customize cursor color
 
