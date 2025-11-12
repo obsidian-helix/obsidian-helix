@@ -56,15 +56,15 @@ export default class HelixPlugin extends Plugin {
 					background: "var(--text-accent)",
 				},
 			})));
+			// Add additional keybindings BEFORE helix to allow overrides
+			if (this.settings.enableAdditionalKeybindings) {
+				this.extensions.push(additionalHelixKeymap());
+			}
 			this.extensions.push(Prec.high(helix({
 				config: {
 					"editor.cursor-shape.insert": this.settings.cursorInInsertMode,
 				}
 			})));
-			// Add additional keybindings if enabled
-			if (this.settings.enableAdditionalKeybindings) {
-				this.extensions.push(additionalHelixKeymap());
-			}
 		}
 		await this.saveSettings();
 		if (reload) this.app.workspace.updateOptions();
