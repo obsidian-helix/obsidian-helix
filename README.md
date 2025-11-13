@@ -1,5 +1,6 @@
 > [!CAUTION]
-> **Maintainer/owner needed!** This project is looking for a maintainer. Please follow [#18](https://github.com/Sinono3/obsidian-helix/issues/18) for more information.
+> **Just transfered** This is a fork/transfer from [Sinono3/obsidian-helix](https://github.com/Sinono3/obsidian-helix)
+and still very early stages.
 
 # Obsidian Helix Keybindings
 
