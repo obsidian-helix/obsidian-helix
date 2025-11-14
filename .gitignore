@@ -20,3 +20,9 @@ data.json
 
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
+
+# Claude Code configuration
+.claude/
+
+# Temporary files
+_UL
