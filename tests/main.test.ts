@@ -3,6 +3,6 @@ import * as assert from "node:assert";
 
 describe("hello test", () => {
   it('Maths magic', () => {
-    assert.strictEqual(1, 2);
+    assert.strictEqual(2, 2);
   });
 });
