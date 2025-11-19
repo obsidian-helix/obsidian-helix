@@ -1,5 +1,5 @@
 # Taken from https://github.com/argenos/nldates-obsidian/blob/master/.github/workflows/release.yml
-name: Build obsidian plugin
+name: Build and test
 
 on:
   pull_request:
