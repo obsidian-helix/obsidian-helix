@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,4 +19,4 @@ jobs:
         run: |
           yarn
           yarn run build --if-present
-          
+          node --test
