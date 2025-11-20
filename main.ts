@@ -10,7 +10,7 @@ interface HelixSettings {
 
 const DEFAULT_SETTINGS: HelixSettings = {
 	enableHelixKeybindings: false,
-	// Following the defualt Obsidian behavior, instead of the Helix one.
+	// Following the default Obsidian behavior, instead of the Helix one.
 	cursorInInsertMode: "bar",
 }
 
@@ -22,7 +22,7 @@ export default class HelixPlugin extends Plugin {
 		await this.loadSettings();
 		this.extensions = [];
 		this.addSettingTab(new HelixSettingsTab(this.app, this));
-		this.setEnabled(this.settings.enableHelixKeybindings, false);
+		await this.setEnabled(this.settings.enableHelixKeybindings, false);
 		this.registerEditorExtension(this.extensions);
 
 		this.addCommand({
@@ -100,7 +100,7 @@ class HelixSettingsTab extends PluginSettingTab {
 				dropDown.addOption('bar', 'Bar');
 				dropDown.setValue(this.plugin.settings.cursorInInsertMode)
 				dropDown.onChange(async (value) => {
-					if (value == "block" || value == "bar") {
+					if (value === "block" || value === "bar") {
 						this.plugin.settings.cursorInInsertMode = value;
 						await this.plugin.saveSettings();
 						await this.plugin.reload();
