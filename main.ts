@@ -53,11 +53,11 @@ export default class HelixPlugin extends Plugin {
 					background: "var(--text-accent)",
 				},
 			})));
-			this.extensions.push(Prec.high(helix({
+			this.extensions.push(helix({
 				config: {
 					"editor.cursor-shape.insert": this.settings.cursorInInsertMode,
 				}
-			})));
+			}));
 		}
 		await this.saveSettings();
 		if (reload) this.app.workspace.updateOptions();
