@@ -62,15 +62,15 @@ export default class HelixPlugin extends Plugin {
 						background: "var(--text-accent)",
 					},
 				})));
-				// Add additional keybindings BEFORE helix to allow overrides
-				if (this.settings.enableAdditionalKeybindings) {
-					this.extensions.push(additionalHelixKeymap());
-				}
 				this.extensions.push(helix({
 					config: {
 						"editor.cursor-shape.insert": this.settings.cursorInInsertMode,
 					}
 				}));
+				// Add additional keybindings AFTER helix so they can override when needed
+				if (this.settings.enableAdditionalKeybindings) {
+					this.extensions.push(additionalHelixKeymap());
+				}
 			} catch (error) {
 				console.error('obsidian-helix: Failed to initialize Helix extension:', error);
 				new Notice('Failed to enable Helix keybindings. Check console for details.');
