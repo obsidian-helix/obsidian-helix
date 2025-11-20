@@ -1,7 +1,6 @@
 import { keymap } from '@codemirror/view';
 import { Extension } from '@codemirror/state';
 import {
-	moveNextWordEnd,
 	moveNextLongWordStart,
 	movePrevLongWordStart,
 	moveNextLongWordEnd,
@@ -9,15 +8,13 @@ import {
 	splitSelection,
 	extendToLineBounds,
 	copySelectionOnNextLine,
-	selectRegex,
 	gotoLine,
 	deleteWordBackward,
 	deleteWordForward,
 	killToLineStart,
 	killToLineEnd,
 	deleteCharBackwardCommand,
-	deleteCharForwardCommand,
-	formatSelections
+	deleteCharForwardCommand
 } from './helix-commands';
 
 /**
@@ -29,13 +26,6 @@ export function additionalHelixKeymap(): Extension {
 		// ====================================================================
 		// NORMAL MODE - WORD MOVEMENT
 		// ====================================================================
-
-		// e - move to end of next word
-		{
-			key: 'e',
-			run: moveNextWordEnd,
-			shift: moveNextWordEnd
-		},
 
 		// W - move to next WORD (whitespace-delimited)
 		{
@@ -77,12 +67,6 @@ export function additionalHelixKeymap(): Extension {
 			run: extendToLineBounds
 		},
 
-		// s - select regex (basic word selection for now)
-		{
-			key: 's',
-			run: selectRegex
-		},
-
 		// ====================================================================
 		// NORMAL MODE - EDITING
 		// ====================================================================
@@ -91,12 +75,6 @@ export function additionalHelixKeymap(): Extension {
 		{
 			key: 'Shift-c',
 			run: copySelectionOnNextLine
-		},
-
-		// = - format selections (placeholder)
-		{
-			key: '=',
-			run: formatSelections
 		},
 
 		// ====================================================================
