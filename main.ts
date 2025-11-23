@@ -2,16 +2,19 @@ import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { additionalHelixKeymap } from './helix-keymap';
 
 interface HelixSettings {
     enableHelixKeybindings: boolean;
     cursorInInsertMode: "block" | "bar";
+    enableAdditionalKeybindings: boolean;
 }
 
 const DEFAULT_SETTINGS: HelixSettings = {
     enableHelixKeybindings: false,
-    // Following the defualt Obsidian behavior, instead of the Helix one.
+    // Following the default Obsidian behavior, instead of the Helix one.
     cursorInInsertMode: "bar",
+    enableAdditionalKeybindings: true,
 }
 
 export default class HelixPlugin extends Plugin {
@@ -22,7 +25,7 @@ export default class HelixPlugin extends Plugin {
         await this.loadSettings();
         this.extensions = [];
         this.addSettingTab(new HelixSettingsTab(this.app, this));
-        this.setEnabled(this.settings.enableHelixKeybindings, false);
+        await this.setEnabled(this.settings.enableHelixKeybindings, false);
         this.registerEditorExtension(this.extensions);
 
         this.addCommand({
@@ -41,23 +44,40 @@ export default class HelixPlugin extends Plugin {
     }
 
     async saveSettings() {
-        await this.saveData(this.settings);
+        try {
+            await this.saveData(this.settings);
+        } catch (error) {
+            console.error('obsidian-helix: Failed to save settings:', error);
+        }
     }
 
     async setEnabled(value: boolean, reload: boolean = true, print: boolean = false) {
         this.settings.enableHelixKeybindings = value;
+        // Clear extensions array (will be repopulated below if enabled)
         this.extensions.length = 0;
         if (value) {
-            this.extensions.push(Prec.high(EditorView.theme({
-                ".cm-hx-block-cursor .cm-hx-cursor": {
-                    background: "var(--text-accent)",
-                },
-            })));
-            this.extensions.push(Prec.high(helix({
-                config: {
-                    "editor.cursor-shape.insert": this.settings.cursorInInsertMode,
+            try {
+                this.extensions.push(Prec.high(EditorView.theme({
+                    ".cm-hx-block-cursor .cm-hx-cursor": {
+                        background: "var(--text-accent)",
+                    },
+                })));
+                this.extensions.push(helix({
+                    config: {
+                        "editor.cursor-shape.insert": this.settings.cursorInInsertMode,
+                    }
+                }));
+                // Add additional keybindings AFTER helix so they can override when needed
+                if (this.settings.enableAdditionalKeybindings) {
+                    this.extensions.push(additionalHelixKeymap());
                 }
-            })));
+            } catch (error) {
+                console.error('obsidian-helix: Failed to initialize Helix extension:', error);
+                new Notice('Failed to enable Helix keybindings. Check console for details.');
+                this.settings.enableHelixKeybindings = false;
+                await this.saveSettings();
+                return;
+            }
         }
         await this.saveSettings();
         if (reload) this.app.workspace.updateOptions();
@@ -88,8 +108,8 @@ class HelixSettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Enable Helix keybindings')
-            .addToggle(async (value) => {
-                value
+            .addToggle((toggle) => {
+                toggle
                     .setValue(this.plugin.settings.enableHelixKeybindings)
                     .onChange(async (value) => this.plugin.setEnabled(value))
             });
@@ -100,12 +120,26 @@ class HelixSettingsTab extends PluginSettingTab {
                 dropDown.addOption('bar', 'Bar');
                 dropDown.setValue(this.plugin.settings.cursorInInsertMode)
                 dropDown.onChange(async (value) => {
-                    if (value == "block" || value == "bar") {
+                    if (value === "block" || value === "bar") {
                         this.plugin.settings.cursorInInsertMode = value;
                         await this.plugin.saveSettings();
                         await this.plugin.reload();
+                    } else {
+                        console.warn('obsidian-helix: Invalid cursor mode value:', value);
                     }
                 });
+            });
+        new Setting(containerEl)
+            .setName('Enable additional keybindings')
+            .setDesc('Enable additional Helix keybindings not in codemirror-helix (e, W, B, E, s, S, X, C, G, etc.)')
+            .addToggle(toggle => {
+                toggle
+                    .setValue(this.plugin.settings.enableAdditionalKeybindings)
+                    .onChange(async (value) => {
+                        this.plugin.settings.enableAdditionalKeybindings = value;
+                        await this.plugin.saveSettings();
+                        await this.plugin.reload();
+                    });
             });
     }
 }

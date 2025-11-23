@@ -23,3 +23,9 @@ data.json
 
 # Direnv
 .direnv/
+
+# Claude Code configuration
+.claude/
+
+# Temporary files
+_UL
