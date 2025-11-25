@@ -1,8 +1,9 @@
 import { describe, it } from "node:test";
 import * as assert from "node:assert";
+import { DEFAULT_SETTINGS } from "../src/logic";
 
-describe("hello test", () => {
-    it('Maths magic', () => {
-        assert.strictEqual(2, 2);
+describe("Default Settings", () => {
+    it('Default Cursor is Bar', () => {
+        assert.strictEqual(DEFAULT_SETTINGS.cursorInInsertMode, "bar");
     });
 });

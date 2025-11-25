@@ -1,18 +1,8 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-
-interface HelixSettings {
-    enableHelixKeybindings: boolean;
-    cursorInInsertMode: "block" | "bar";
-}
-
-const DEFAULT_SETTINGS: HelixSettings = {
-    enableHelixKeybindings: false,
-    // Following the defualt Obsidian behavior, instead of the Helix one.
-    cursorInInsertMode: "bar",
-}
+import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
 
 export default class HelixPlugin extends Plugin {
     settings: HelixSettings;
@@ -48,11 +38,7 @@ export default class HelixPlugin extends Plugin {
         this.settings.enableHelixKeybindings = value;
         this.extensions.length = 0;
         if (value) {
-            this.extensions.push(Prec.high(EditorView.theme({
-                ".cm-hx-block-cursor .cm-hx-cursor": {
-                    background: "var(--text-accent)",
-                },
-            })));
+            this.extensions.push(Prec.high(DEFAULT_EDITOR_VIEW));
             this.extensions.push(Prec.high(helix({
                 config: {
                     "editor.cursor-shape.insert": this.settings.cursorInInsertMode,
