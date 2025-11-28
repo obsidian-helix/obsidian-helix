@@ -33,6 +33,7 @@ jobs:
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
+        permisions: write-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ github.ref }}
@@ -44,6 +45,7 @@ jobs:
       - name: Upload zip file
         id: upload-zip
         uses: actions/upload-release-asset@v1
+        permisions: write-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -54,6 +56,7 @@ jobs:
       - name: Upload main.js
         id: upload-main
         uses: actions/upload-release-asset@v1
+        permisions: write-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -64,6 +67,7 @@ jobs:
       - name: Upload manifest.json
         id: upload-manifest
         uses: actions/upload-release-asset@v1
+        permisions: write-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
