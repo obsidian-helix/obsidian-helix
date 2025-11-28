@@ -1,10 +1,10 @@
 {
-	"id": "helix",
-	"name": "Helix Keybindings",
-	"version": "0.1.10",
-	"minAppVersion": "0.15.0",
-	"description": "Enables Helix keybindings on the editor",
-	"author": "Aldo Acevedo",
-	"authorUrl": "https://github.com/Sinono3",
-	"isDesktopOnly": true
+    "id": "helix",
+    "name": "Helix Keybindings",
+    "version": "0.1.11",
+    "minAppVersion": "1.10.6",
+    "description": "Use Helix key bindings when editing",
+    "author": "Obsidian Helix Community",
+    "authorUrl": "https://github.com/obsidian-helix",
+    "isDesktopOnly": true
 }
