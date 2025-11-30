@@ -1,5 +1,3 @@
-import { helix } from 'codemirror-helix';
-import { Extension, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 
 export interface HelixSettings {

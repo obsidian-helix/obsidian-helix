@@ -1,6 +1,5 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
 
@@ -12,12 +11,12 @@ export default class HelixPlugin extends Plugin {
         await this.loadSettings();
         this.extensions = [];
         this.addSettingTab(new HelixSettingsTab(this.app, this));
-        this.setEnabled(this.settings.enableHelixKeybindings, false);
+        await this.setEnabled(this.settings.enableHelixKeybindings, false);
         this.registerEditorExtension(this.extensions);
 
         this.addCommand({
-            id: "toggle-helix-keybindings",
-            name: "Toggle Helix keybindings",
+            id: "toggle-keybindings",
+            name: "Toggle helix mode",
             callback: async () => this.setEnabled(!this.settings.enableHelixKeybindings, true, true),
         });
     }
@@ -27,7 +26,7 @@ export default class HelixPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); // eslint-disable-line
     }
 
     async saveSettings() {
@@ -73,7 +72,7 @@ class HelixSettingsTab extends PluginSettingTab {
         containerEl.createEl("p", { text: "Vim keybindings must be disabled for the plugin to work" });
 
         new Setting(containerEl)
-            .setName('Enable Helix keybindings')
+            .setName('Enable helix mode')
             .addToggle(async (value) => {
                 value
                     .setValue(this.plugin.settings.enableHelixKeybindings)
