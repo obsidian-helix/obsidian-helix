@@ -26,7 +26,7 @@ export default class HelixPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); // eslint-disable-line
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as HelixSettings;
     }
 
     async saveSettings() {
