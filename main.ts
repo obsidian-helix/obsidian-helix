@@ -41,7 +41,8 @@ export default class HelixPlugin extends Plugin {
             this.extensions.push(Prec.high(helix({
                 config: {
                     "editor.cursor-shape.insert": this.settings.cursorInInsertMode,
-                }
+                },
+                drawSelection: false
             })));
         }
         await this.saveSettings();
