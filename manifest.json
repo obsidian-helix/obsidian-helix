@@ -1,7 +1,7 @@
 {
     "id": "helix",
     "name": "Helix Keybindings",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "minAppVersion": "1.10.6",
     "description": "Use Helix key bindings when editing.",
     "author": "Obsidian Helix Community",
