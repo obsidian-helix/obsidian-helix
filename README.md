@@ -7,24 +7,7 @@ Keep in mind the CM6 extension is in a very early stage of development.
 
 ## Installation
 
-Because this plugin isn't oficially in the Obsidian plugin list (yet), you must install it directly from the repo.
-Two ways to do this are using BRAT or manually.
-
-### Via BRAT
-
-1. [Install BRAT](https://obsidian.md/plugins?search=brat)
-2. Copy the link to this Git repository
-3. Follow [these instructions](https://tfthacker.com/brat-quick-guide#Adding+a+beta+plugin)
-
-### Manually
-
-1. Clone the repository into `<your vault directory>/.obsidian/plugins` and then run:
-  ```
-  $ npm i
-  $ npm run build
-  ```
-2. Restart Obsidian.
-3. Go to Settings in Obsidian and enable `Helix Keybindings`.
+This plugin can be installed and enabled like any other community plugin in the official list of plugins: https://community.obsidian.md/plugins/helix
 
 ## Usage
 
