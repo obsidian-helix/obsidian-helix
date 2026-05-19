@@ -32,8 +32,25 @@ jobs:
         env:
             RELEASE_TYPE: ${{ inputs.release-type }}
         run: |
-          V=`cat manifest.json | jq ".version" -r`
-          echo "The old version is: $V"
+          VERSION=`cat manifest.json | jq ".version" -r`
+          echo "The old version is: $VERSION"
+          VERSION_COMPONENTS=( ${VERSION//./ } ) # replace points, split into array
+          PATCH="${VERSION_COMPONENTS[2]}"
+          MINOR="${VERSION_COMPONENTS[1]}"
+          MAJOR="${VERSION_COMPONENTS[0]}"
+          if [[ $RELEASE_TYPE == "patch" ]]; then
+            PATCH=$((PATCH+1))
+          elif [[ $RELEASE_TYPE == "minor" ]]; then
+            PATCH="0"
+            MINOR=$((MINOR+1))
+          else
+            PATCH="0"
+            MINOR="0"
+            MAJOR=$((MAJOR+1))
+          fi
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "The new version is: $NEW_VERSION"
+
           # yarn
           # yarn run build --if-present
           # mkdir ${{ env.PLUGIN_NAME }}
