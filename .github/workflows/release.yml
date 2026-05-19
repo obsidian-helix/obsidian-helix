@@ -29,8 +29,11 @@ jobs:
           node-version: "24.x" # You might need to adjust this value to your own version
       - name: Build
         id: build
+        env:
+            RELEASE_TYPE: ${{ inputs.release-type }}
         run: |
-          cat manifest.json | jq ".version" -r
+          V=`cat manifest.json | jq ".version" -r`
+          echo "The old version is: $V"
           # yarn
           # yarn run build --if-present
           # mkdir ${{ env.PLUGIN_NAME }}
