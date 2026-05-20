@@ -52,6 +52,8 @@ jobs:
           echo "The new version is: $NEW_VERSION"
           NEW_BODY=`jq '.version = $newVal' --arg newVal "$NEW_VERSION" manifest.json`
           echo "$NEW_BODY" > manifest.json
+          git config user.email "obsidian-helix-release@bot.com"
+          git config user.name "Obsidian Helix Release Bot"
           git add .
           git commit -m "Prepare release for v$NEW_VERSION"
           git tag "$NEW_VERSION"
