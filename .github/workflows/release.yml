@@ -57,7 +57,7 @@ jobs:
           git add .
           git commit -m "Prepare release for v$NEW_VERSION"
           git tag "$NEW_VERSION"
-          git push --tags
+          git push --follow-tags
           echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Build
