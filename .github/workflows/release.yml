@@ -65,9 +65,9 @@ jobs:
         run: |
           yarn
           yarn run build --if-present
-          mkdir ${{ env.PLUGIN_NAME }}
+          mkdir $PLUGIN_NAME
           cp main.js manifest.json ${{ env.PLUGIN_NAME }}
-          zip -r ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}
+          zip -r "$PLUGIN_NAME-$VERSION.zip" $PLUGIN_NAME
           ls
 
       - name: Create Release
@@ -82,7 +82,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            ./${{ env.PLUGIN_NAME }}.zip
+            ./${{ env.PLUGIN_NAME }}-${{ env.VERSION }}.zip
             ./main.js
             ./manifest.json
     # - name: Upload styles.css
