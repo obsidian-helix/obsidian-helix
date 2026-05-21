@@ -27,6 +27,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "24.x" # You might need to adjust this value to your own version
+      - name: Build and test
+        id: build_and_test
+        run: |
+          npm install
+          npm run lint
+          npm run build --if-present
+          npm test
       - name: Compute release version
         id: version
         env:
@@ -60,8 +67,8 @@ jobs:
           git push --follow-tags
           echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-      - name: Build
-        id: build
+      - name: Build Release
+        id: build_release
         run: |
           yarn
           yarn run build --if-present
