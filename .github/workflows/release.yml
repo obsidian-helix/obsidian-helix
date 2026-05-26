@@ -13,6 +13,12 @@ on:
         - patch
         - minor
         - major
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
 env:
   PLUGIN_NAME: helix # Change this to the name of your plugin-id folder
 
@@ -76,6 +82,11 @@ jobs:
           cp main.js manifest.json ${{ env.PLUGIN_NAME }}
           zip -r "$PLUGIN_NAME-$VERSION.zip" $PLUGIN_NAME
           ls
+
+      - name: Generate artifact attestation for main.js
+        uses: actions/attest@v4
+        with:
+          subject-path: './main.js'
 
       - name: Create Release
         id: create_release
