@@ -37,99 +37,94 @@ jobs:
           private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v6
-      - name: Experiment
-        id: experiment
+        with:
+          token: ${{ steps.get_autocommit_app_token.outputs.token }
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x" # You might need to adjust this value to your own version
+
+      - name: Build and test
+        id: build_and_test
+        run: |
+          npm install
+          npm run lint
+          npm run build --if-present
+          npm test
+
+      - name: Compute release version
+        id: version
         env:
+            RELEASE_TYPE: ${{ inputs.release-type }}
             GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          gh auth status
+          VERSION=`cat manifest.json | jq ".version" -r`
+          echo "The old version is: $VERSION"
+          VERSION_COMPONENTS=( ${VERSION//./ } ) # replace points, split into array
+          PATCH="${VERSION_COMPONENTS[2]}"
+          MINOR="${VERSION_COMPONENTS[1]}"
+          MAJOR="${VERSION_COMPONENTS[0]}"
+          if [[ $RELEASE_TYPE == "patch" ]]; then
+            PATCH=$((PATCH+1))
+          elif [[ $RELEASE_TYPE == "minor" ]]; then
+            PATCH="0"
+            MINOR=$((MINOR+1))
+          else
+            PATCH="0"
+            MINOR="0"
+            MAJOR=$((MAJOR+1))
+          fi
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "The new version is: $NEW_VERSION"
+          NEW_BODY=`jq '.version = $newVal' --arg newVal "$NEW_VERSION" manifest.json`
+          echo "$NEW_BODY" > manifest.json
           gh auth setup-git
-          gh auth status
+          git config user.email "obsidian-helix-release@bot.com"
+          git config user.name "Obsidian Helix Release Bot"
+          git add .
+          git commit -m "Prepare release for v$NEW_VERSION"
+          git tag "$NEW_VERSION"
+          git push --follow-tags
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-    #   - name: Use Node.js
-    #     uses: actions/setup-node@v6
-    #     with:
-    #       node-version: "24.x" # You might need to adjust this value to your own version
-    #   - name: Build and test
-    #     id: build_and_test
-    #     run: |
-    #       npm install
-    #       npm run lint
-    #       npm run build --if-present
-    #       npm test
+      - name: Build Release
+        id: build_release
+        run: |
+          yarn
+          yarn run build --if-present
+          mkdir $PLUGIN_NAME
+          cp main.js manifest.json ${{ env.PLUGIN_NAME }}
+          zip -r "$PLUGIN_NAME-$VERSION.zip" $PLUGIN_NAME
+          ls
 
-    #   - name: Compute release version
-    #     id: version
-    #     env:
-    #         RELEASE_TYPE: ${{ inputs.release-type }}
-    #         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-    #     run: |
-    #       VERSION=`cat manifest.json | jq ".version" -r`
-    #       echo "The old version is: $VERSION"
-    #       VERSION_COMPONENTS=( ${VERSION//./ } ) # replace points, split into array
-    #       PATCH="${VERSION_COMPONENTS[2]}"
-    #       MINOR="${VERSION_COMPONENTS[1]}"
-    #       MAJOR="${VERSION_COMPONENTS[0]}"
-    #       if [[ $RELEASE_TYPE == "patch" ]]; then
-    #         PATCH=$((PATCH+1))
-    #       elif [[ $RELEASE_TYPE == "minor" ]]; then
-    #         PATCH="0"
-    #         MINOR=$((MINOR+1))
-    #       else
-    #         PATCH="0"
-    #         MINOR="0"
-    #         MAJOR=$((MAJOR+1))
-    #       fi
-    #       NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-    #       echo "The new version is: $NEW_VERSION"
-    #       NEW_BODY=`jq '.version = $newVal' --arg newVal "$NEW_VERSION" manifest.json`
-    #       echo "$NEW_BODY" > manifest.json
-    #       gh auth setup-git
-    #       git config user.email "obsidian-helix-release@bot.com"
-    #       git config user.name "Obsidian Helix Release Bot"
-    #       git add .
-    #       git commit -m "Prepare release for v$NEW_VERSION"
-    #       git tag "$NEW_VERSION"
-    #       git push --follow-tags
-    #       echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+      - name: Generate artifact attestation for main.js
+        uses: actions/attest@v4
+        with:
+          subject-path: './main.js'
 
-    #   - name: Build Release
-    #     id: build_release
-    #     run: |
-    #       yarn
-    #       yarn run build --if-present
-    #       mkdir $PLUGIN_NAME
-    #       cp main.js manifest.json ${{ env.PLUGIN_NAME }}
-    #       zip -r "$PLUGIN_NAME-$VERSION.zip" $PLUGIN_NAME
-    #       ls
-
-    #   - name: Generate artifact attestation for main.js
-    #     uses: actions/attest@v4
-    #     with:
-    #       subject-path: './main.js'
-
-    #   - name: Create Release
-    #     id: create_release
-    #     uses: softprops/action-gh-release@v3
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #     with:
-    #       tag_name: ${{ env.VERSION }}
-    #       name: ${{ env.VERSION }}
-    #       draft: false
-    #       prerelease: false
-    #       generate_release_notes: true
-    #       files: |
-    #         ./${{ env.PLUGIN_NAME }}-${{ env.VERSION }}.zip
-    #         ./main.js
-    #         ./manifest.json
-    # # - name: Upload styles.css
-    # #   id: upload-css
-    # #   uses: actions/upload-release-asset@v1
-    # #   env:
-    # #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # #   with:
-    # #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    # #     asset_path: ./styles.css
-    # #     asset_name: styles.css
-    # #     asset_content_type: text/css
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            ./${{ env.PLUGIN_NAME }}-${{ env.VERSION }}.zip
+            ./main.js
+            ./manifest.json
+    # - name: Upload styles.css
+    #   id: upload-css
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: ./styles.css
+    #     asset_name: styles.css
+    #     asset_content_type: text/css
