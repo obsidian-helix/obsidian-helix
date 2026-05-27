@@ -28,6 +28,14 @@ jobs:
     permissions: write-all
 
     steps:
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v6
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -40,10 +48,12 @@ jobs:
           npm run lint
           npm run build --if-present
           npm test
+
       - name: Compute release version
         id: version
         env:
             RELEASE_TYPE: ${{ inputs.release-type }}
+            GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           VERSION=`cat manifest.json | jq ".version" -r`
           echo "The old version is: $VERSION"
@@ -65,6 +75,7 @@ jobs:
           echo "The new version is: $NEW_VERSION"
           NEW_BODY=`jq '.version = $newVal' --arg newVal "$NEW_VERSION" manifest.json`
           echo "$NEW_BODY" > manifest.json
+          gh auth setup-git
           git config user.email "obsidian-helix-release@bot.com"
           git config user.name "Obsidian Helix Release Bot"
           git add .
