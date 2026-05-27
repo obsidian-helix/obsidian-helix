@@ -37,10 +37,14 @@ jobs:
           private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v6
+        with:
+          token: ${{ steps.get_autocommit_app_token.outputs.token }
+
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24.x" # You might need to adjust this value to your own version
+
       - name: Build and test
         id: build_and_test
         run: |
