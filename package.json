@@ -6,7 +6,7 @@
     "scripts": {
         "test": "node --import tsx --test test/**/*.ts",
         "dev": "node esbuild.config.mjs",
-        "lint": "eslint",
+        "lint": "eslint -c eslint.config.mjs",
         "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
         "version": "node version-bump.mjs && git add manifest.json versions.json"
     },

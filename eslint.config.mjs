@@ -1,17 +1,12 @@
 // eslint.config.mjs
 import tsparser from "@typescript-eslint/parser";
-import { defineConfig } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import tseslint from 'typescript-eslint';
 
-let typescriptOnly = (config) => ({
-    ...config,
-    files: ["main.ts", "test/**/*.ts", "src/**/*.ts"],
-  });
-
 export default defineConfig([
-  ...typescriptOnly(obsidianmd.configs.recommended),
-  tseslint.configs.recommendedTypeChecked.map(typescriptOnly),
+  ...obsidianmd.configs.recommended,
+  tseslint.configs.recommendedTypeChecked,
   {
     files: ["main.ts", "test/**/*.ts", "src/**/*.ts"],
     languageOptions: {
@@ -21,8 +16,6 @@ export default defineConfig([
       },
     },
 
-    ignores: ["node_modules/", "main.js"],
-
     // You can add your own configuration to override or add rules
     rules: {
       // example: turn off a rule from the recommended set
@@ -31,4 +24,5 @@ export default defineConfig([
       // "obsidianmd/prefer-file-manager-trash": "error",
     },
   },
+  globalIgnores(["**/*.js", "**/*.cjs", "**/*.mjs", "**/*.json"])
 ]);
