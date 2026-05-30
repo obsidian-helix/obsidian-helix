@@ -3,14 +3,30 @@ import { Extension, Prec } from '@codemirror/state';
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
 
-export default class HelixPlugin extends Plugin {
+// function shouldBeUnreachable(value: never) {}
+
+export default class HelixPlugin extends Plugin implements EventLoop {
+
     settings: HelixSettings;
     extensions: Extension[]
+
+    on = async (event: HelixEvent) => {
+        switch (event.type) {
+            case "switch-helix-mode":
+                await this.setEnabled(event.enabled);
+                break;
+            case "set-cursor-shape":
+                this.settings.cursorInInsertMode = event.shape;
+                await this.saveSettings();
+                await this.reload();
+                break;
+        }
+    }
 
     async onload() {
         await this.loadSettings();
         this.extensions = [];
-        this.addSettingTab(new HelixSettingsTab(this.app, this));
+        this.addSettingTab(new HelixSettingsTab(this.app, this, this));
         await this.setEnabled(this.settings.enableHelixKeybindings, false);
         this.registerEditorExtension(this.extensions);
 
@@ -58,10 +74,20 @@ export default class HelixPlugin extends Plugin {
     }
 }
 
+type CursorShape = "block" | "bar"
+
+type HelixEvent =
+    | { type: "switch-helix-mode", enabled: boolean }
+    | { type: "set-cursor-shape", shape: CursorShape }
+
+interface EventLoop {
+    on(event: HelixEvent): Promise<void>;
+}
+
 class HelixSettingsTab extends PluginSettingTab {
     plugin: HelixPlugin;
 
-    constructor(app: App, plugin: HelixPlugin) {
+    constructor(app: App, plugin: HelixPlugin, private eventLoop: EventLoop) {
         super(app, plugin);
         this.plugin = plugin;
     }
@@ -77,7 +103,7 @@ class HelixSettingsTab extends PluginSettingTab {
             .addToggle(async (value) => {
                 value
                     .setValue(this.plugin.settings.enableHelixKeybindings)
-                    .onChange(async (value) => this.plugin.setEnabled(value))
+                    .onChange(async (value) => await this.eventLoop.on({ type: "switch-helix-mode", enabled: value }))
             });
         new Setting(containerEl)
             .setName('Cursor in insert mode')
@@ -87,9 +113,7 @@ class HelixSettingsTab extends PluginSettingTab {
                 dropDown.setValue(this.plugin.settings.cursorInInsertMode)
                 dropDown.onChange(async (value) => {
                     if (value == "block" || value == "bar") {
-                        this.plugin.settings.cursorInInsertMode = value;
-                        await this.plugin.saveSettings();
-                        await this.plugin.reload();
+                        await this.eventLoop.on({ type: "set-cursor-shape", shape: value});
                     }
                 });
             });
