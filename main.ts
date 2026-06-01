@@ -1,32 +1,35 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
+import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, EventLoop, HelixEvent, HelixSettings } from 'src/logic';
 
-// function shouldBeUnreachable(value: never) {}
-
-export default class HelixPlugin extends Plugin implements EventLoop {
-
-    settings: HelixSettings;
-    extensions: Extension[]
+class EventLoopImpl implements EventLoop {
+    constructor(private plugin: HelixPlugin) {}
 
     on = async (event: HelixEvent) => {
         switch (event.type) {
             case "switch-helix-mode":
-                await this.setEnabled(event.enabled);
+                await this.plugin.setEnabled(event.enabled);
                 break;
             case "set-cursor-shape":
-                this.settings.cursorInInsertMode = event.shape;
-                await this.saveSettings();
-                await this.reload();
+                this.plugin.settings.cursorInInsertMode = event.shape;
+                await this.plugin.saveSettings();
+                await this.plugin.reload();
                 break;
         }
     }
+}
+
+export default class HelixPlugin extends Plugin {
+
+    private _settings: HelixSettings;
+    extensions: Extension[];
+    private readonly eventLoop = new EventLoopImpl(this);
 
     async onload() {
         await this.loadSettings();
         this.extensions = [];
-        this.addSettingTab(new HelixSettingsTab(this.app, this, this));
+        this.addSettingTab(new HelixSettingsTab(this.app, this, this.eventLoop));
         await this.setEnabled(this.settings.enableHelixKeybindings, false);
         this.registerEditorExtension(this.extensions);
 
@@ -41,8 +44,12 @@ export default class HelixPlugin extends Plugin implements EventLoop {
 
     }
 
+    public get settings() {
+        return this._settings;
+    }
+
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as HelixSettings;
+        this._settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as HelixSettings;
     }
 
     async saveSettings() {
@@ -72,16 +79,6 @@ export default class HelixPlugin extends Plugin implements EventLoop {
     async reload() {
         await this.setEnabled(this.settings.enableHelixKeybindings);
     }
-}
-
-type CursorShape = "block" | "bar"
-
-type HelixEvent =
-    | { type: "switch-helix-mode", enabled: boolean }
-    | { type: "set-cursor-shape", shape: CursorShape }
-
-interface EventLoop {
-    on(event: HelixEvent): Promise<void>;
 }
 
 class HelixSettingsTab extends PluginSettingTab {
