@@ -17,3 +17,13 @@ export const DEFAULT_EDITOR_VIEW = EditorView.theme({
         background: "var(--text-accent)",
     },
 });
+
+export type CursorShape = "block" | "bar"
+
+export type HelixEvent =
+    | { type: "switch-helix-mode", enabled: boolean }
+    | { type: "set-cursor-shape", shape: CursorShape }
+
+export interface EventLoop {
+    on(event: HelixEvent): Promise<void>;
+}
