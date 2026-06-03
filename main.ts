@@ -1,7 +1,10 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { DataStorage, DEFAULT_EDITOR_VIEW, EventLoop, HelixEvent, HelixSettings, HelixSettingsStorage } from 'src/logic';
+import { DEFAULT_EDITOR_VIEW, EventLoop } from 'src/logic';
+import { HelixEvent } from 'src/model';
+import { DataStorage } from 'src/obsidian-api';
+import { HelixSettings, HelixSettingsStorage } from 'src/settings';
 
 class EventLoopImpl implements EventLoop {
     constructor(private plugin: HelixPlugin) {}
