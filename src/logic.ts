@@ -27,3 +27,21 @@ export type HelixEvent =
 export interface EventLoop {
     on(event: HelixEvent): Promise<void>;
 }
+
+export interface DataStorage {
+    loadData(): Promise<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    saveData(data: any): Promise<void>; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+export class HelixSettingsStorage {
+    constructor(private store: DataStorage) {
+    }
+
+    async loadSettings(): Promise<HelixSettings> {
+        return Object.assign({}, DEFAULT_SETTINGS, await this.store.loadData()) as HelixSettings;
+    }
+
+    async saveSettings(settings: HelixSettings) {
+        await this.store.saveData(settings);
+    }
+}

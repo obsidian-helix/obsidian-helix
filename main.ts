@@ -1,7 +1,7 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, EventLoop, HelixEvent, HelixSettings } from 'src/logic';
+import { DataStorage, DEFAULT_EDITOR_VIEW, EventLoop, HelixEvent, HelixSettings, HelixSettingsStorage } from 'src/logic';
 
 class EventLoopImpl implements EventLoop {
     constructor(private plugin: HelixPlugin) {}
@@ -20,11 +20,12 @@ class EventLoopImpl implements EventLoop {
     }
 }
 
-export default class HelixPlugin extends Plugin {
+export default class HelixPlugin extends Plugin implements DataStorage {
 
     private _settings: HelixSettings;
     extensions: Extension[];
     private readonly eventLoop = new EventLoopImpl(this);
+    private readonly settingsStorage = new HelixSettingsStorage(this);
 
     async onload() {
         await this.loadSettings();
@@ -49,11 +50,11 @@ export default class HelixPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this._settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as HelixSettings;
+        this._settings = await this.settingsStorage.loadSettings();
     }
 
     async saveSettings() {
-        await this.saveData(this.settings);
+        await this.settingsStorage.saveSettings(this.settings);
     }
 
     async setEnabled(value: boolean, reload: boolean = true, print: boolean = false) {
