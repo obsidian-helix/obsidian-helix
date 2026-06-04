@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import * as assert from "node:assert";
-import { DEFAULT_SETTINGS } from "../src/logic";
+import { DEFAULT_SETTINGS } from "src/settings";
 
 describe("Default Settings", () => {
     it('Default Cursor is Bar', () => {
