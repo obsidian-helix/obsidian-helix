@@ -1,6 +1,7 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
-import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { keymap } from '@codemirror/view';
+import { App, editorInfoField, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
 
 export default class HelixPlugin extends Plugin {
@@ -44,6 +45,20 @@ export default class HelixPlugin extends Plugin {
                 },
                 drawSelection: false
             })));
+            this.extensions.push(Prec.highest(keymap.of([{
+                key: "Enter",
+                run: (view) => {
+                    const editor = view.state.field(editorInfoField, false)?.editor;
+                    if (!editor) return false;
+                    if (!(this.app.vault as any).getConfig("smartIndentList")) return false;
+
+                    const continueList = (editor as any).newlineAndIndentContinueMarkdownList;
+                    if (typeof continueList !== "function") return false;
+
+                    continueList.call(editor);
+                    return true;
+                },
+            }])));
         }
         await this.saveSettings();
         if (reload) this.app.workspace.updateOptions();
