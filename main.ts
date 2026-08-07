@@ -1,8 +1,16 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { App, editorInfoField, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, editorInfoField, Notice, Plugin, PluginSettingTab, Setting, Vault } from 'obsidian';
 import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
+
+// Undocumented Obsidian internals, not present in the public API typings.
+interface VaultWithConfig extends Vault {
+    getConfig(setting: string): unknown;
+}
+interface EditorWithListContinuation extends Editor {
+    newlineAndIndentContinueMarkdownList?: () => void;
+}
 
 export default class HelixPlugin extends Plugin {
     settings: HelixSettings;
@@ -48,11 +56,11 @@ export default class HelixPlugin extends Plugin {
             this.extensions.push(Prec.highest(keymap.of([{
                 key: "Enter",
                 run: (view) => {
-                    const editor = view.state.field(editorInfoField, false)?.editor;
+                    const editor = view.state.field(editorInfoField, false)?.editor as EditorWithListContinuation | undefined;
                     if (!editor) return false;
-                    if (!(this.app.vault as any).getConfig("smartIndentList")) return false;
+                    if (!(this.app.vault as VaultWithConfig).getConfig("smartIndentList")) return false;
 
-                    const continueList = (editor as any).newlineAndIndentContinueMarkdownList;
+                    const continueList = editor.newlineAndIndentContinueMarkdownList;
                     if (typeof continueList !== "function") return false;
 
                     continueList.call(editor);
