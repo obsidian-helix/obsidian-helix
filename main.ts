@@ -1,16 +1,8 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { App, Editor, editorInfoField, Notice, Plugin, PluginSettingTab, Setting, Vault } from 'obsidian';
+import { App, editorInfoField, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
-
-// Undocumented Obsidian internals, not present in the public API typings.
-interface VaultWithConfig extends Vault {
-    getConfig(setting: string): unknown;
-}
-interface EditorWithListContinuation extends Editor {
-    newlineAndIndentContinueMarkdownList?: () => void;
-}
 
 export default class HelixPlugin extends Plugin {
     settings: HelixSettings;
@@ -35,7 +27,7 @@ export default class HelixPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as HelixSettings;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     }
 
     async saveSettings() {
@@ -56,14 +48,13 @@ export default class HelixPlugin extends Plugin {
             this.extensions.push(Prec.highest(keymap.of([{
                 key: "Enter",
                 run: (view) => {
-                    const editor = view.state.field(editorInfoField, false)?.editor as EditorWithListContinuation | undefined;
+                    const editor = view.state.field(editorInfoField, false)?.editor;
                     if (!editor) return false;
-                    if (!(this.app.vault as VaultWithConfig).getConfig("smartIndentList")) return false;
+                    if (!this.app.vault.getConfig("smartIndentList")) return false;
 
-                    const continueList = editor.newlineAndIndentContinueMarkdownList;
-                    if (typeof continueList !== "function") return false;
+                    if (typeof editor.newlineAndIndentContinueMarkdownList !== "function") return false;
 
-                    continueList.call(editor);
+                    editor.newlineAndIndentContinueMarkdownList();
                     return true;
                 },
             }])));
