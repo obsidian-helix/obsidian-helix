@@ -45,6 +45,9 @@ export default class HelixPlugin extends Plugin {
                 },
                 drawSelection: false
             })));
+            // Outrank helix's own Prec.high Enter binding (`insertNewlineAndIndent`)
+            // so Obsidian's list/blockquote continuation runs first when enabled;
+            // falls through to helix's default handling otherwise.
             this.extensions.push(Prec.highest(keymap.of([{
                 key: "Enter",
                 run: (view) => {
