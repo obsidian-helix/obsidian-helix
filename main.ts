@@ -1,6 +1,7 @@
 import { helix } from 'codemirror-helix';
 import { Extension, Prec } from '@codemirror/state';
-import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { keymap } from '@codemirror/view';
+import { App, editorInfoField, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { DEFAULT_EDITOR_VIEW, DEFAULT_SETTINGS, HelixSettings } from 'src/logic';
 
 export default class HelixPlugin extends Plugin {
@@ -26,7 +27,7 @@ export default class HelixPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as HelixSettings;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     }
 
     async saveSettings() {
@@ -44,6 +45,22 @@ export default class HelixPlugin extends Plugin {
                 },
                 drawSelection: false
             })));
+            // Outrank helix's own Prec.high Enter binding (`insertNewlineAndIndent`)
+            // so Obsidian's list/blockquote continuation runs first when enabled;
+            // falls through to helix's default handling otherwise.
+            this.extensions.push(Prec.highest(keymap.of([{
+                key: "Enter",
+                run: (view) => {
+                    const editor = view.state.field(editorInfoField, false)?.editor;
+                    if (!editor) return false;
+                    if (!this.app.vault.getConfig("smartIndentList")) return false;
+
+                    if (typeof editor.newlineAndIndentContinueMarkdownList !== "function") return false;
+
+                    editor.newlineAndIndentContinueMarkdownList();
+                    return true;
+                },
+            }])));
         }
         await this.saveSettings();
         if (reload) this.app.workspace.updateOptions();

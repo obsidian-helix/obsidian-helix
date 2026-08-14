@@ -25,6 +25,7 @@
         "eslint": "^9.39.1",
         "eslint-plugin-obsidianmd": "^0.1.9",
         "obsidian": "latest",
+        "obsidian-typings": "^6.32.0",
         "tslib": "2.4.0",
         "tsx": "^4.20.6",
         "typescript": "4.8.4",
